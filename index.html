@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brownian Motion Simulation (Invariance Principle)</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Brownian Motion Simulation: Random Walk Approach</h1>
+
+        <section class="controls-section">
+            <h2>Simulation Parameters</h2>
+            <div class="controls">
+                <label for="T">Time Interval (T):</label>
+                <input type="number" id="T" value="1" min="0.1" step="0.1">
+                
+                <label for="n">Steps/Subintervals (n):</label>
+                <input type="number" id="n" value="1000" min="100" step="100">
+
+                <label for="runs">Simulation Runs (m):</label>
+                <input type="number" id="runs" value="1000" min="100" step="100">
+                
+                <button onclick="runSimulation()">Run Simulation</button>
+            </div>
+        </section>
+        
+        <hr>
+
+        <section id="results">
+            <h2>Simulation Results and Theoretical Analysis</h2>
+            
+            <div class="chart-container">
+                <div class="chart">
+                    <h3>Brownian Motion Path (Single Run)</h3>
+                    <canvas id="brownianPathChart"></canvas>
+                </div>
+                <div class="chart">
+                    <h3>Final Position Distribution (Observed vs. Theoretical N(0, T))</h3>
+                    <canvas id="finalDistributionChart"></canvas>
+                </div>
+            </div>
+
+            <div class="analysis-box">
+                <h3 class="analysis-title">Theoretical Analysis (Invariance Principle)</h3>
+                <p><strong>Stochastic Process Approximated:</strong> The simulation implements a <strong>Discrete-Time Random Walk</strong> that, through the use of random increments, approximates the <strong>Standard Brownian Motion</strong> (or Wiener Process), $B_t$. This process is the foundation for many financial and physical models involving continuous random movement.</p>
+                
+                <p><strong>The Invariance Principle (Donsker's Theorem):</strong>  This fundamental principle states that a sequence of Random Walks with small, independent steps converges, in the limit ($n \to \infty$), to the <strong>Brownian Motion</strong> $B_t$. This page is experimentally demonstrating this convergence.</p>
+                
+                <p><strong>Fundamental Properties:</strong></p>
+                <ul>
+                    <li><strong>Normal Increments:</strong> The change (or "jump") $B_{t} - B_{s}$ for $t>s$ follows a normal distribution $N(0, t-s)$. In our case, the jump at each step is $\Delta B_t = \sqrt{\Delta t} \cdot Z$, where $Z \sim N(0, 1)$ and $\Delta t = T/n$.</li>
+                    <li><strong>Independent Increments:</strong> The changes that occur in non-overlapping time intervals are <strong>independent</strong> of each other.</li>
+                    <li><strong>Final Distribution:</strong> The final position of the process at time $T$, $B_T$, follows a <strong>Normal Distribution</strong> with zero mean and variance equal to the elapsed time: $B_T \sim N(0, T)$. The variance is <strong>linear</strong> in time.</li>
+                </ul>
+                
+                <p><strong>Generation Method:</strong> The implementation uses the <strong>Box-Muller Transformation</strong> to generate the necessary $N(0, 1)$ random normal numbers for the jumps, starting from uniform $U(0, 1)$ variables, as required for the correct simulation of the stochastic process.</p>
+
+                <h3 class="analysis-title" style="margin-top: 25px;">JavaScript Code for the Generator (Box-Muller)</h3>
+                <p>The following function generates a Standard Normal random variable $Z \sim N(0, 1)$ using two uniform variables $U_1$ and $U_2$ (polar implementation of the Box-Muller method), optimized for efficiency by reusing the second generated value.</p>
+                
+                <pre style="background-color: #f8f8f8; padding: 15px; border: 1px solid #ddd; border-radius: 5px; overflow-x: auto;">
+<code>
+function generateStandardNormal() {
+    // Handles the reuse of the second value
+    if (hasSecondBoxMuller) {
+        hasSecondBoxMuller = false;
+        return secondBoxMullerValue;
+    }
+
+    let u1, u2, R, theta;
+
+    // Generates two non-zero Uniform U(0, 1) variables
+    do { u1 = Math.random(); } while (u1 === 0); 
+    u2 = Math.random(); 
+
+    // Box-Muller Transformation (Polar Form)
+    R = Math.sqrt(-2.0 * Math.log(u1)); 
+    theta = 2.0 * Math.PI * u2; 
+
+    // Z1 = R * cos(theta)
+    const z1 = R * Math.cos(theta);
+    
+    // Z2 = R * sin(theta) (We save the second value for the next call)
+    secondBoxMullerValue = R * Math.sin(theta);
+    hasSecondBoxMuller = true;
+
+    return z1;
+}
+</code>
+                </pre>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Homework Completed by Signoretti Lorenzo Mattia 2050463</p>
+    </footer>
+
+    <script src="brownian_script.js"></script>
+</body>
+</html>
